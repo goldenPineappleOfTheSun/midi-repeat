@@ -164,8 +164,8 @@ class Tape:
             
     def process_record(self, pos, midi_events):
         for event in midi_events:
-            is_on = event[0][0] == 144 or x[0][0] == 153
-            is_off = event[0][0] == 128 or x[0][0] == 137
+            is_on = event[0][0] == 144 or event[0][0] == 153
+            is_off = event[0][0] == 128 or event[0][0] == 137
             pitch = event[0][1]
             volume = event[0][2]
             if is_on:
