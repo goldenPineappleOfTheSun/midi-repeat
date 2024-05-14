@@ -120,7 +120,7 @@ class Tape:
             self.process_monitor(pos, midi_events)
             
     def process_physical_notes(self, pos, midi_events):
-        started = [x for x in midi_events if x[0][0] == 144 or x[0][0] == 217]
+        started = [x for x in midi_events if x[0][0] == 144 or x[0][0] == 153]
         stoped = [x for x in midi_events if x[0][0] == 128 or x[0][0] == 137]
         for event in started:
             pitch = event[0][1]
@@ -132,8 +132,11 @@ class Tape:
             self.current_real_notes[pitch] = None
 
     def process_monitor(self, pos, midi_events):
-        started = [x for x in midi_events if x[0][0] == 144 or x[0][0] == 217]
+        started = [x for x in midi_events if x[0][0] == 144 or x[0][0] == 153]
         stoped = [x for x in midi_events if x[0][0] == 128 or x[0][0] == 137]
+
+        if len(midi_events) > 0: 
+            print([x[0][0] for x in midi_events])
 
         for event in started:
             pitch = event[0][1]
@@ -161,7 +164,7 @@ class Tape:
             
     def process_record(self, pos, midi_events):
         for event in midi_events:
-            is_on = event[0][0] == 144 or x[0][0] == 217
+            is_on = event[0][0] == 144 or x[0][0] == 153
             is_off = event[0][0] == 128 or x[0][0] == 137
             pitch = event[0][1]
             volume = event[0][2]
