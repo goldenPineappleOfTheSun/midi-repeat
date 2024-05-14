@@ -193,6 +193,8 @@ class Tape:
                 if note._play_started > 0:
                     self.note_off(note)
                     note.stoped()
+
+        self.device.socket_send('loop-event')
                     
     def start_loop(self):
         if self.prev_state == tape_states.monitor and self.state != tape_states.monitor:

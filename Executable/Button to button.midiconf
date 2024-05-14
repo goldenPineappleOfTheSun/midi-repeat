@@ -1,9 +1,9 @@
-bass: MPK mini 3 [A]
-kick: MPK mini 3 [B]
-lowtom: MPK mini 3 [B]
-drumkit: MPK mini 3 [B]
+bass: MPK mini 3
+kick: MPK mini 3
+lowtom: MPK mini 3
+drumkit: MPK mini 3
 
-size: 7504ms
+size: 7392ms
 beats: 16
 
 monitor 1, monitor 2

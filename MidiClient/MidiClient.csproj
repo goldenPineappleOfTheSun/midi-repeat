@@ -134,4 +134,10 @@
     <None Include="Resources\stripes decor.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)Button to button.midiconf" "$(SolutionDir)Executable\Button to button.midiconf"
+copy /Y "$(TargetDir)Button to button.wav" "$(SolutionDir)Executable\Button to button.wav"
+copy /Y "$(TargetDir)server.py" "$(SolutionDir)Executable\server.py"
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>
