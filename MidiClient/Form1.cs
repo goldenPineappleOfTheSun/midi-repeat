@@ -608,7 +608,7 @@ namespace MidiClient
             }
             else
             {
-                panel2.Width = 5 + (int)((float)(panel1.Width - 5) / (float)beats) * n;
+                panel2.Width = (int)((float)(panel1.Width) / (float)beats) * (n + 1);
             }
         }
 

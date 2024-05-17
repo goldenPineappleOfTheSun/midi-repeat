@@ -452,7 +452,8 @@ class Server:
             
         if data == 'exit':
             self.state = server_states.terminated
-            raise Exception('Got exit message')
+            self.stop_server()
+            #raise Exception('Got exit message')
             
         message = data.split(' ')
         command = message[0]
@@ -760,8 +761,6 @@ class Server:
         except:
             pass
         finally:
-            input()
-            print("!")
             exit()
 
     def __enter__(self):
@@ -856,6 +855,5 @@ if __name__ == "__main__":
             except Exception as err:
                 print(err)
                 traceback.print_exc()
-                print("ex!")
                 exit()
                 break
