@@ -3,8 +3,8 @@ kick: MPK mini 3
 lowtom: MPK mini 3
 drumkit: MPK mini 3
 
-size: 7392ms
-beats: 16
+size: 14784ms
+beats: 32
 
 monitor 1, monitor 2, metronome on
 record 1, record 2

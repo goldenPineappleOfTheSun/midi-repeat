@@ -608,6 +608,35 @@ namespace MidiClient
             }
             else
             {
+                if (beats - n < 9)
+                {
+                    countdown.Text = (beats - n).ToString();
+                    if (n % 4 == 0)
+                    {
+                        countdown.Text = countdown.Text + "!";
+                    }
+                    if (beats - n < 5)
+                    {
+                        countdown.BackColor = Color.Salmon;
+                    }
+                    else
+                    {
+                        countdown.BackColor = Color.DimGray;
+                    }
+                }
+                else
+                {
+                    if (n % 4 == 0)
+                    {
+                        countdown.BackColor = Color.DimGray;
+                        countdown.Text = "!";
+                    }
+                    else
+                    {
+                        countdown.BackColor = Color.DimGray;
+                        countdown.Text = ".";
+                    }
+                }
                 panel2.Width = (int)((float)(panel1.Width) / (float)beats) * (n + 1);
             }
         }

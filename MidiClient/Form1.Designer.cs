@@ -58,6 +58,7 @@ namespace MidiClient
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.countdown = new System.Windows.Forms.Label();
             this.configPanelGroupBox.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox12)).BeginInit();
@@ -355,12 +356,25 @@ namespace MidiClient
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
             // 
+            // countdown
+            // 
+            this.countdown.AutoSize = true;
+            this.countdown.BackColor = System.Drawing.Color.DimGray;
+            this.countdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.countdown.ForeColor = System.Drawing.Color.White;
+            this.countdown.Location = new System.Drawing.Point(426, 165);
+            this.countdown.Name = "countdown";
+            this.countdown.Size = new System.Drawing.Size(13, 18);
+            this.countdown.TabIndex = 7;
+            this.countdown.Text = ".";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(454, 209);
+            this.Controls.Add(this.countdown);
             this.Controls.Add(this.configPanelGroupBox);
             this.Controls.Add(this.configButton);
             this.Controls.Add(this.panel1);
@@ -405,6 +419,7 @@ namespace MidiClient
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -433,6 +448,7 @@ namespace MidiClient
         private System.Windows.Forms.Button startButton;
         private System.Windows.Forms.Button metronomeButton;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Label countdown;
     }
 }
 
