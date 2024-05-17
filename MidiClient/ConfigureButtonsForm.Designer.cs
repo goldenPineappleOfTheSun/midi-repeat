@@ -591,6 +591,7 @@ namespace MidiClient
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Name = "ConfigureButtonsForm";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "ConfigureButtonsForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ConfigureButtonsForm_FormClosing);
             this.Load += new System.EventHandler(this.ConfigureButtonsForm_Load);

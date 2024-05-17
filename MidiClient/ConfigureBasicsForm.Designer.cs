@@ -103,6 +103,7 @@ namespace MidiClient
             this.Controls.Add(this.numericSize);
             this.Controls.Add(this.label1);
             this.Name = "ConfigureBasicsForm";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "ConfigureBasicsForm";
             this.Load += new System.EventHandler(this.ConfigureBasicsForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.numericSize)).EndInit();

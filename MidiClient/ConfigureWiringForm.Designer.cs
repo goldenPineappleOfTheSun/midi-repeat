@@ -338,6 +338,7 @@ namespace MidiClient
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "ConfigureWiringForm";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "ConfigureWiringForm";
             this.Load += new System.EventHandler(this.ConfigureWiringForm_Load);
             this.groupBox1.ResumeLayout(false);
