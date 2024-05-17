@@ -663,6 +663,7 @@ class Server:
         self.data.start_time = time.time() * 1000
         self.state = server_states.run
         self.scriptsCache.execute_immediately(0)
+        self.socket_send(f'sync {self.data.start_time}')
 
     def stop(self):
         self.state = server_states.pending
