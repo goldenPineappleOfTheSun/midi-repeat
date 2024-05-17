@@ -234,6 +234,13 @@ class Tape:
     def monitor(self):
         self.state = tape_states.monitor
 
+    def stop(self):
+        current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
+        print([str(note) for note in current_notes.values()])
+        for event in current_notes.values():
+            self.note_off(note)
+
+
     def __str__(self):
         return self.get_output_info()
 
@@ -274,6 +281,10 @@ class Device:
 
     def socket_send(self, message):
         self.server.socket_send(message)
+
+    def stop(self):
+        for tape in self.tapes:
+            tape.stop()
 
     def __str__(self):
         return '\n'.join([f'{self.get_input_info()} -> {tape}' for tape in self.tapes])
@@ -667,6 +678,9 @@ class Server:
 
     def stop(self):
         self.state = server_states.pending
+        for device in self.data.devices:
+            device.stop()
+        time.sleep(0.5)
         hard_reset_midi()
 
     def process(self):
