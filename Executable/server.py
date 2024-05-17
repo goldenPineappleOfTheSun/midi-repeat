@@ -236,10 +236,11 @@ class Tape:
 
     def stop(self):
         current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
-        print([str(note) for note in current_notes.values()])
         for event in current_notes.values():
             self.note_off(note)
-
+        for note in self.notes:
+                self.note_off(note)
+                note.stoped()
 
     def __str__(self):
         return self.get_output_info()
@@ -760,12 +761,15 @@ class Server:
             pass
         finally:
             input()
+            print("!")
+            exit()
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop_server()
+        exit()
 
 
 #-- utils --
@@ -852,4 +856,6 @@ if __name__ == "__main__":
             except Exception as err:
                 print(err)
                 traceback.print_exc()
+                print("ex!")
+                exit()
                 break
