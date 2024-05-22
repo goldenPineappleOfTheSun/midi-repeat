@@ -642,6 +642,7 @@ class Server:
 
     def metronome_tick_on(self, n):
         self.socket_send(f'metronome-tick {n}')
+        print(32 - n)
         if self.is_metronome_on:
             note = Note(0, 36, 120)
             self.metronome_output.note_on(note)
