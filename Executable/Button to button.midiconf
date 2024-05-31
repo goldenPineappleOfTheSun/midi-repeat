@@ -1,7 +1,7 @@
 bass: MPK mini 3
-kick: MPD218
-lowtom: MPD218
-drumkit: MPD218
+kick: MPK mini 3
+lowtom: MPK mini 3
+drumkit: MPK mini 3
 
 size: 14784ms
 beats: 32
@@ -15,4 +15,4 @@ play 1, play 2
 record 1, mute 2, mute 3, monitor 4
 play 1, play 2, play 3, monitor 4
 
-MPD218 event-153 note-44|MPD218 event-153 note-45|MPD218 event-153 note-46|MPD218 event-153 note-48|MPD218 event-153 note-47|MPD218 event-153 note-49|MPD218 event-153 note-50
+MPK mini 3 event-153 note-37|MPK mini 3 event-153 note-38|MPK mini 3 [A] event-153 note-39|MPK mini 3 [A] event-153 note-40|MPK mini 3 [A] event-153 note-41|MPK mini 3 [A] event-153 note-42|MPK mini 3 [A] event-153 note-43

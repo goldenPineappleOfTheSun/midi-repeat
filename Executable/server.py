@@ -351,6 +351,7 @@ class ScriptsCache:
         self.staged_scripts = []
         self.scripts_source = source_code.split('/')
         self.parse_scripts(source_code)
+        self.fired_count = 0
 
     def _msg(self, text):
         print(text)
@@ -422,6 +423,7 @@ class ScriptsCache:
         
     def fire_staged_scripts(self):
         for script in self.staged_scripts:
+            self.fired_count += 1
             script()
         self.staged_scripts.clear()
 
@@ -456,6 +458,7 @@ class Server:
         self.scriptsCache = None
         self.metronome_output = None
         self.is_metronome_on = True
+        self.song_started = False
         self._socket_send_generator = self._create_socket_send_generator()
         print(f"{bcolors.OKBLUE}Server listening on {host}:{port}{bcolors.ENDC}")
 
@@ -677,9 +680,12 @@ class Server:
 
     def metronome_tick_on(self, n):
         self.socket_send(f'metronome-tick {n}')
-        print(32 - n)
+        index = self.data.beats - n
+        print(index)
         if self.is_metronome_on:
             note = Note(0, 36, 120)
+            if index <= 4 and self.song_started == False:
+                note = Note(0, 37, 120)
             self.metronome_output.note_on(note)
 
     def metronome_tick_off(self):
@@ -709,7 +715,7 @@ class Server:
             print(f'{bcolors.WARNING}Devices are not set!{bcolors.ENDC}')
             return
 
-        self.data.start_time = time.time() * 1000
+        self.data.start_time = time.time() * 1000 + (self.data.loop_length / self.data.beats) * 0.3
         self.state = server_states.run
         self.scriptsCache.execute_immediately(0)
         self.socket_send(f'sync {self.data.start_time}')
@@ -724,6 +730,9 @@ class Server:
     def process(self):
         self._last_current_time = self._current_time
         self._current_time = (time.time() * 1000 - self.data.start_time) % self.data.loop_length
+
+        if self._last_current_time == 0:
+            self._last_current_time = self._current_time
                 
         for i, device in enumerate(self.data.devices):
             midi_events = []
@@ -749,6 +758,8 @@ class Server:
             for device in self.data.devices:
                 device.end_loop()
             self.scriptsCache.fire_staged_scripts()
+            if (self.scriptsCache.fired_count > 0):
+                self.song_started = True
             for device in self.data.devices:
                 device.start_loop()
 

@@ -1,16 +1,93 @@
 import client
 import time
 import random
+import re
+import os
+
+selected = ''
+selected_file = ''
+
+def question(text, options):
+    global selected
+    print(text)
+
+    for key in options.keys():
+        print(f'{key}: {options[key]}')
+
+    answer = ''
+    while not answer in options.keys():
+        answer = input()
+    selected = answer
+    print('-------')
+# --- select configuration ---
+
+options = dict()
+for i, file in enumerate(os.listdir('./')):
+    if file.endswith(".midiconf"):
+        options[str(i + 1)] = file
+question('select:', options)
+
+# --- read configs ---
+
+lines = []
+with open(options[selected], "r") as file:
+    lines = [line.rstrip() for line in file]
+
+wires = []
+basic = []
+scripts = []
+buttons = ''
+
+state = 'wires'
+states = ['wires', 'basic', 'scripts', 'buttons', '']
+for line in lines:
+    if line == '':
+        state = states[states.index(state) + 1]
+        continue
+    if state == 'wires':
+        wires.append(line)
+    if state == 'basic':
+        basic.append(line)
+    if state == 'scripts':
+        scripts.append(line)
+    if state == 'buttons':
+        buttons = line
+
+# --- interpret configs ---
+
+size = 0
+beats = 0
+for line in basic:
+
+    match = re.search(r'size: (\d+)ms', line)
+    if match:
+        size = match.group(1)
+
+    match = re.search(r'beats: (\d+)$', line)
+    if match:
+        beats = match.group(1)
+
+wiredevices = []
+for line in wires:
+    match = re.search(r'\w+: ([\d\w ]+)$', line)
+    wiredevices.append(match.group(1))
+wires_encoded = '|'.join(wiredevices).replace(' ', '%20')
+
+scripts_encoded = '/'.join([x.replace(', ', '>').replace(',', '>').replace(' ', '.') for x in scripts])
+
+buttons_encoded = buttons.replace(' ', '%20')
+
+# --- start ---
 
 socket = client.create()
 time.sleep(1)
-client.send(socket, f'set-basics 14784 32')
+client.send(socket, f'set-basics {size} {beats}')
 time.sleep(0.5)
-client.send(socket, f'set-wiring MPK%20mini%203|MPD218|MPD218|MPD218')
+client.send(socket, f'set-wiring {wires_encoded}')
 time.sleep(0.5)
-client.send(socket, f'set-scripts monitor.1>monitor.2>metronome.on/record.1>record.2/play.1>play.2>record.3>metronome.on/play.3/monitor.4/monitor.1>mute.2>mute.3>monitor.4/play.1>play.2/record.1>mute.2>mute.3>monitor.4/play.1>play.2>play.3>monitor.4')
+client.send(socket, f'set-scripts {scripts_encoded}')
 time.sleep(0.5)
-client.send(socket, f'set-buttons MPD218%20event-153%20note-44|MPD218%20event-153%20note-45|MPD218%20event-153%20note-46|MPD218%20event-153%20note-47|MPD218%20event-153%20note-48|MPD218%20event-153%20note-49|MPD218%20event-153%20note-50|MPK%20mini%203%20[A]%20event-153%20note-43')
+client.send(socket, f'set-buttons {buttons_encoded}')
 time.sleep(0.5)
 client.send(socket, f'start')
 
