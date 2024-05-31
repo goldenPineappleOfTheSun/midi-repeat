@@ -1,8 +1,10 @@
 from queue import Queue
 from math import floor
 import pygame.midi
+import pyaudio  
 import socket
 import time
+import wave  
 import os
 import re
 
@@ -460,6 +462,8 @@ class Server:
         self.is_metronome_on = True
         self.song_started = False
         self._socket_send_generator = self._create_socket_send_generator()
+        self.prepare_backing_track('button guitar.wav')
+        self.loops_count = 0
         print(f"{bcolors.OKBLUE}Server listening on {host}:{port}{bcolors.ENDC}")
 
     def accept(self):
@@ -471,6 +475,10 @@ class Server:
         data = ''
 
         next(self._socket_send_generator)
+
+        if self.state == server_states.run and self.backing_track and self.loops_count > 0:
+            self.backing_stream.write(self.backing_track)  
+            self.backing_track = self.backing_file.readframes(1024)  
 
         try:
             data = self.client_socket.recv(1024).decode()
@@ -720,6 +728,15 @@ class Server:
         self.scriptsCache.execute_immediately(0)
         self.socket_send(f'sync {self.data.start_time}')
 
+    def prepare_backing_track(self, file):
+        self.pyaudio = pyaudio.PyAudio()  
+        self.backing_file = wave.open(file, "rb")  
+        self.backing_stream = self.pyaudio.open(format = self.pyaudio.get_format_from_width(self.backing_file.getsampwidth()),  
+                        channels = self.backing_file.getnchannels(),  
+                        rate = self.backing_file.getframerate(),  
+                        output = True)  
+        self.backing_track = self.backing_file.readframes(1024)  
+
     def stop(self):
         self.state = server_states.pending
         for device in self.data.devices:
@@ -755,6 +772,7 @@ class Server:
             
         if self._current_time < self._last_current_time:
             print('loop!')
+            self.loops_count += 1
             for device in self.data.devices:
                 device.end_loop()
             self.scriptsCache.fire_staged_scripts()

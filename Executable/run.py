@@ -19,12 +19,12 @@ def question(text, options):
         answer = input()
     selected = answer
     print('-------')
+
 # --- select configuration ---
 
 options = dict()
-for i, file in enumerate(os.listdir('./')):
-    if file.endswith(".midiconf"):
-        options[str(i + 1)] = file
+for i, file in enumerate([x for x in os.listdir('./') if x.endswith(".midiconf")]):
+    options[str(i + 1)] = file
 question('select:', options)
 
 # --- read configs ---
