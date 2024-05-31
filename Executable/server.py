@@ -56,6 +56,37 @@ class Note:
     def __str__(self):
         return f'[♪{self.pitch_str()} {round(self.pos)}ms {round(self.length)}ms{f" ({round(self._play_started)}ms)" if self._play_started > 0 else ""}]'
 
+class MPD218Preprocessor:
+    def __init__(self):
+        self.saved = []
+        self.treshold = 60
+
+    def is_start_event(self, event):
+        return event[0][0] == 153 or event[0][0] == 144
+
+    def process_input(self, events):
+        if len(events) == 0:
+            return events
+
+        timestamp = events[0][1]
+        self.saved = [x for x in self.saved if timestamp - x[1] < self.treshold]
+        
+        result = []
+        for event in events:
+            ok = True
+            for saved in self.saved:
+                if not self.is_start_event(event):
+                    ok = True
+                    break
+                if saved[0][0] == event[0][0] and saved[0][1] == event[0][1] and event[1] - saved[1] < self.treshold:
+                    ok = False
+                    break
+            if ok:
+                result.append(event)
+                self.saved.append(event)
+        
+        return result
+
 '''
 инициализация:
 1. программа спрашивает, сколько будет дорожек (выходных портов)
@@ -136,7 +167,7 @@ class Tape:
         stoped = [x for x in midi_events if x[0][0] == 128 or x[0][0] == 137]
 
         if len(midi_events) > 0: 
-            print([x[0][0] for x in midi_events])
+            print([x for x in midi_events])
 
         for event in started:
             pitch = event[0][1]
@@ -408,6 +439,7 @@ class ServerData:
         self.buttons = None # ControlButton[]
         self.devices = [] # Device[]
         self.mailboxes = [] # pygame.midi.Input
+        self.preprocessors = [] # process raw input events (raw_event[] -> raw_event[])
 
 class Server:
     def __init__(self, host, port):
@@ -620,6 +652,9 @@ class Server:
             id = get_input_device_id(device_name)
             self.data.devices.append(Device(id, outputs[device_name], self))
             self.data.mailboxes.append(pygame.midi.Input(id))
+            self.data.preprocessors.append([])
+            if device_name == 'MPD218':
+                self.data.preprocessors[-1].append(MPD218Preprocessor())
 
         print('----- current wiring -----')
         for device in self.data.devices:
@@ -695,6 +730,8 @@ class Server:
             
             if self.data.mailboxes[i].poll():
                 midi_events = self.data.mailboxes[i].read(10)
+                for pp in self.data.preprocessors[i]:
+                    midi_events = pp.process_input(midi_events)
                 for event in midi_events:
                     is_pressed = event[0][0] == 144 or event[0][0] == 153
                     if is_pressed:
