@@ -1,2 +1,2 @@
-start cmd /k python server.py 
-start cmd /k python run.py
+start wt python server.py 
+start wt python run.py
