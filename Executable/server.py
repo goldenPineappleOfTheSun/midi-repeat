@@ -89,6 +89,38 @@ class MPD218Preprocessor:
         
         return result
 
+class BackingTrack:
+    def __init__(self, filename, offset = 0, volume = 1):
+        self.pyaudio = pyaudio.PyAudio()  
+        self.filename = filename
+        self.offset = offset
+        self.volume = volume
+        self.file = None
+        self.stream = None
+        self.buffer = None
+        self.chunk = 1024
+        self.prepare(filename, offset)
+
+    def prepare(self, filename, offset):
+        self.file = wave.open(filename, "rb") 
+        self.stream = self.pyaudio.open(format = self.pyaudio.get_format_from_width(self.file.getsampwidth()),  
+            channels = self.file.getnchannels(),  
+            rate = self.file.getframerate(),  
+            output = True)  
+        self.buffer = b'\x00' * self.chunk
+        
+        while self.offset < 0:
+            self.offset += self.chunk
+            self.buffer = self.file.readframes(self.chunk)
+
+    def read(self):
+        if self.offset > 0:
+            self.offset -= self.chunk
+            self.stream.write(b'\x00' * self.chunk)  
+            return
+        self.stream.write(self.buffer)  
+        self.buffer = self.file.readframes(self.chunk)
+
 '''
 инициализация:
 1. программа спрашивает, сколько будет дорожек (выходных портов)
@@ -462,7 +494,7 @@ class Server:
         self.is_metronome_on = True
         self.song_started = False
         self._socket_send_generator = self._create_socket_send_generator()
-        self.prepare_backing_track('button guitar.wav')
+        self.backing_track = BackingTrack('button guitar.wav')
         self.loops_count = 0
         print(f"{bcolors.OKBLUE}Server listening on {host}:{port}{bcolors.ENDC}")
 
@@ -476,9 +508,8 @@ class Server:
 
         next(self._socket_send_generator)
 
-        if self.state == server_states.run and self.backing_track and self.loops_count > 0:
-            self.backing_stream.write(self.backing_track)  
-            self.backing_track = self.backing_file.readframes(1024)  
+        if self.backing_track and self.state == server_states.run and self.loops_count > 0:
+            self.backing_track.read()
 
         try:
             data = self.client_socket.recv(1024).decode()
@@ -727,15 +758,6 @@ class Server:
         self.state = server_states.run
         self.scriptsCache.execute_immediately(0)
         self.socket_send(f'sync {self.data.start_time}')
-
-    def prepare_backing_track(self, file):
-        self.pyaudio = pyaudio.PyAudio()  
-        self.backing_file = wave.open(file, "rb")  
-        self.backing_stream = self.pyaudio.open(format = self.pyaudio.get_format_from_width(self.backing_file.getsampwidth()),  
-                        channels = self.backing_file.getnchannels(),  
-                        rate = self.backing_file.getframerate(),  
-                        output = True)  
-        self.backing_track = self.backing_file.readframes(1024)  
 
     def stop(self):
         self.state = server_states.pending
