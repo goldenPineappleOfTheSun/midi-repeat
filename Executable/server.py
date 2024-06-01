@@ -160,6 +160,8 @@ class Tape:
         self.player = pygame.midi.Output(out_port)
         self.current_real_notes = {}
         self.loop_length = loop_length
+        self.play_after_record = False
+        self.silent_record = False
 
     def is_note_physically_pressed(self, note):
         return note.pitch in self.current_real_notes and self.current_real_notes[note.pitch] != None
@@ -200,9 +202,6 @@ class Tape:
     def process_monitor(self, pos, midi_events):
         started = [x for x in midi_events if x[0][0] == 144 or x[0][0] == 153]
         stoped = [x for x in midi_events if x[0][0] == 128 or x[0][0] == 137]
-
-        if len(midi_events) > 0: 
-            print([x for x in midi_events])
 
         for event in started:
             pitch = event[0][1]
@@ -246,22 +245,26 @@ class Tape:
     def end_loop(self):
         self.prev_state = self.state
 
-        if self.state == tape_states.record:
-            print(f'{bcolors.OKCYAN}STOP RECORD{bcolors.ENDC}')
-            self.state = tape_states.mute
-
-            for note in self.notes:
-                if note.length == 0:
-                    note.length = self.loop_length - note.pos
-                    self.note_off(note)
-
-            self.device.socket_send(f'tape-mute {self.port_index}')
-
         if self.state == tape_states.play:
             for note in self.notes:
                 if note._play_started > 0:
                     self.note_off(note)
                     note.stoped()
+
+        if self.state == tape_states.record:
+            print(f'{bcolors.OKCYAN}STOP RECORD{bcolors.ENDC}')
+            if self.play_after_record:
+                self.play()
+            else:
+                self.mute()
+
+            self.play_after_record = False
+            self.silent_record = False
+
+            for note in self.notes:
+                if note.length == 0:
+                    note.length = self.loop_length - note.pos
+                    self.note_off(note)
 
         self.device.socket_send('loop-event')
                     
@@ -290,15 +293,35 @@ class Tape:
 
     def play(self):
         self.state = tape_states.play
+        self.device.socket_send(f'tape-play {self.port_index}')
+        print(f'{bcolors.OKGREEN}PLAY [{self.port_index}]{bcolors.ENDC}')
             
     def record(self):
         self.state = tape_states.record
+        self.device.socket_send(f'tape-record {self.port_index}')
+        print(f'{bcolors.FAIL}RECORD [{self.port_index}]{bcolors.ENDC}')
+            
+    def shadow(self):
+        self.state = tape_states.record
+        self.silent_record = True
+        self.device.socket_send(f'tape-shadow {self.port_index}')
+        print(f'{bcolors.HEADER}RECORD [{self.port_index}]{bcolors.ENDC}')
+            
+    def repeat(self):
+        self.state = tape_states.record
+        self.play_after_record = True
+        self.device.socket_send(f'tape-record {self.port_index}')
+        print(f'{bcolors.FAIL}RECORD-REPEAT [{self.port_index}]{bcolors.ENDC}')
             
     def mute(self):
         self.state = tape_states.mute
+        self.device.socket_send(f'tape-mute {self.port_index}')
+        print(f'{bcolors.WARNING}MUTE [{self.port_index}]{bcolors.ENDC}')
 
     def monitor(self):
         self.state = tape_states.monitor
+        self.device.socket_send(f'tape-monitor {self.port_index}')
+        print(f'{bcolors.OKBLUE}MONITOR [{self.port_index}]{bcolors.ENDC}')
 
     def stop(self):
         current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
@@ -377,6 +400,8 @@ class ScriptsCache:
             'msg': lambda text: lambda: self._msg(text),
             'play': lambda tape: lambda: self._play(tape),
             'record': lambda tape: lambda: self._record(tape),
+            'repeat': lambda tape: lambda: self._repeat(tape),
+            'shadow': lambda tape: lambda: self._shadow(tape),
             'mute': lambda tape: lambda: self._mute(tape),
             'monitor': lambda tape: lambda: self._monitor(tape),
             'metronome': lambda value: lambda: self._metronome(value),
@@ -394,26 +419,26 @@ class ScriptsCache:
     def _monitor(self, index):
         tape = self.server.find_tape(int(index))
         tape.monitor() 
-        self.server.socket_send(f'tape-monitor {index}')
-        print(f'{bcolors.OKBLUE}MONITOR [{index}]{bcolors.ENDC}')
         
     def _play(self, index):
         tape = self.server.find_tape(int(index))
         tape.play() 
-        self.server.socket_send(f'tape-play {index}')
-        print(f'{bcolors.OKGREEN}PLAY [{index}]{bcolors.ENDC}')
         
     def _record(self, index):
         tape = self.server.find_tape(int(index))
         tape.record() 
-        self.server.socket_send(f'tape-record {index}')
-        print(f'{bcolors.FAIL}RECORD [{index}]{bcolors.ENDC}')
+        
+    def _repeat(self, index):
+        tape = self.server.find_tape(int(index))
+        tape.repeat() 
+        
+    def _shadow(self, index):
+        tape = self.server.find_tape(int(index))
+        tape.shadow() 
         
     def _mute(self, index):
         tape = self.server.find_tape(int(index))
         tape.mute() 
-        self.server.socket_send(f'tape-mute {index}')
-        print(f'{bcolors.WARNING}MUTE [{index}]{bcolors.ENDC}')
         
     def _metronome(self, value):
         value = True if value == 'on' else False
@@ -728,7 +753,7 @@ class Server:
     def metronome_tick_on(self, n):
         self.socket_send(f'metronome-tick {n}')
         index = self.data.beats - n
-        print(index)
+        print(index) # countdown
         if self.is_metronome_on:
             note = Note(0, 36, 120)
             if index <= 4 and self.song_started == False:
