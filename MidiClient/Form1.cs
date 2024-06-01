@@ -223,6 +223,7 @@ namespace MidiClient
                     if (state == "buttons")
                     {
                         buts = line;
+                        state = "backing";
                     }
                 }
             }

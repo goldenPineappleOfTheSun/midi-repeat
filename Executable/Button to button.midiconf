@@ -1,0 +1,19 @@
+bass: MPK mini 3
+kick: MPK mini 3
+lowtom: MPK mini 3
+drumkit: MPK mini 3
+
+size: 14784ms
+beats: 32
+
+monitor 1, monitor 2, metronome on
+record 1, record 2
+play 1, play 2, record 3, metronome off
+play 3
+monitor 4
+monitor 1, mute 2, mute 3, monitor 4
+play 1, play 2
+record 1, mute 2, mute 3, monitor 4
+play 1, play 2, play 3, monitor 4
+
+MPK mini 3 event-153 note-36|MPK mini 3 event-153 note-37|MPK mini 3 event-153 note-38|MPK mini 3 [A] event-153 note-39|MPK mini 3 [A] event-153 note-40|MPK mini 3 [A] event-153 note-41|MPK mini 3 [A] event-153 note-42|MPK mini 3 [A] event-153 note-43
