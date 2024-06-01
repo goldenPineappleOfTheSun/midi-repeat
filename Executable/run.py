@@ -37,9 +37,10 @@ wires = []
 basic = []
 scripts = []
 buttons = ''
+backing = []
 
 state = 'wires'
-states = ['wires', 'basic', 'scripts', 'buttons', '']
+states = ['wires', 'basic', 'scripts', 'buttons', 'backing', '']
 for line in lines:
     if line == '':
         state = states[states.index(state) + 1]
@@ -52,6 +53,8 @@ for line in lines:
         scripts.append(line)
     if state == 'buttons':
         buttons = line
+    if state == 'backing':
+        backing.append(line)
 
 # --- interpret configs ---
 
@@ -77,10 +80,34 @@ scripts_encoded = '/'.join([x.replace(', ', '>').replace(',', '>').replace(' ', 
 
 buttons_encoded = buttons.replace(' ', '%20')
 
+backing_enabled = False
+backing_file = ''
+backing_startloop = 0
+backing_offset = 0
+if backing[0] == 'backing: true' or backing[0] == 'backing:true':
+    backing_enabled = True
+    for line in backing:
+
+        match = re.search(r'file: "([\w\s\.\d_-]+)"', line)
+        if match:
+            backing_file = match.group(1).replace(' ', '%20')
+        
+        match = re.search(r'startloop: (\d+)', line)
+        if match:
+            backing_startloop = match.group(1)
+        
+        match = re.search(r'offset: (\d+)', line)
+        if match:
+            backing_offset = match.group(1)
+
 # --- start ---
 
 socket = client.create()
 time.sleep(1)
+if backing_enabled:
+    client.send(socket, f'prepare-backing-track {backing_file} {backing_startloop} {backing_offset}')
+    time.sleep(2)
+
 client.send(socket, f'set-basics {size} {beats}')
 time.sleep(0.5)
 client.send(socket, f'set-wiring {wires_encoded}')

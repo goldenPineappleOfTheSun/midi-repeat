@@ -16,3 +16,8 @@ record 1, mute 2, mute 3, monitor 4
 play 1, play 2, play 3, monitor 4
 
 MPK mini 3 event-153 note-37|MPK mini 3 event-153 note-38|MPK mini 3 [A] event-153 note-39|MPK mini 3 [A] event-153 note-40|MPK mini 3 [A] event-153 note-41|MPK mini 3 [A] event-153 note-42|MPK mini 3 [A] event-153 note-43
+
+backing: true
+file: "button guitar.wav"
+startloop: 1
+offset: 0

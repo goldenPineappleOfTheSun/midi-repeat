@@ -90,9 +90,10 @@ class MPD218Preprocessor:
         return result
 
 class BackingTrack:
-    def __init__(self, filename, offset = 0, volume = 1):
+    def __init__(self, filename, startloop = 0, offset = 0, volume = 1):
         self.pyaudio = pyaudio.PyAudio()  
         self.filename = filename
+        self.first_loop = startloop
         self.offset = offset
         self.volume = volume
         self.file = None
@@ -494,7 +495,7 @@ class Server:
         self.is_metronome_on = True
         self.song_started = False
         self._socket_send_generator = self._create_socket_send_generator()
-        self.backing_track = BackingTrack('button guitar.wav')
+        self.backing_track = None
         self.loops_count = 0
         print(f"{bcolors.OKBLUE}Server listening on {host}:{port}{bcolors.ENDC}")
 
@@ -508,7 +509,7 @@ class Server:
 
         next(self._socket_send_generator)
 
-        if self.backing_track and self.state == server_states.run and self.loops_count > 0:
+        if self.backing_track and self.state == server_states.run and self.loops_count > self.backing_track.first_loop:
             self.backing_track.read()
 
         try:
@@ -546,6 +547,10 @@ class Server:
         
         if command == 'stop-debug-events':
             self.stop_debug_events(*message[1:])
+            return
+
+        if command == 'prepare-backing-track':
+            self.prepare_backing_track(*message[1:])
             return
         
         if command == 'set-basics':
@@ -673,6 +678,9 @@ class Server:
                     message = f'debug-event {get_input_device_name(debug_input.device_id)} event-{event[0][0]} note-{event[0][1]} ({event})'
                     print(message) # do not erase
                     self.socket_send(message)
+
+    def prepare_backing_track(self, filename, startloop, offset):
+        self.backing_track = BackingTrack(filename.replace('%20', ' '), int(startloop), int(offset))
 
     def set_basics(self, loop_size, beats):
         self.data.loop_length = int(loop_size)
