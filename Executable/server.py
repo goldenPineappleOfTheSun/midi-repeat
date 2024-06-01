@@ -34,6 +34,11 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+#-- debug options
+
+exercise_enabled = True
+exercise_subdivisions = 2
+
 #-- classes --
 
 class Note:
@@ -822,6 +827,21 @@ class Server:
                             if button.check_event(self.data.mailboxes[i], event):
                                 print(f'{bcolors.OKCYAN}STAGED SCRIPT "{self.scriptsCache.get_script_source(button_index).replace(".", " ").replace(">", ", ")}"{bcolors.ENDC}')
                                 self.scriptsCache.stage_script(button_index)
+                if len(midi_events) > 0 and exercise_enabled:
+                    midi_events[0][0][0] == 144 or midi_events[0][0][0] == 153
+                    if is_pressed:
+                        div_length = self.data.loop_length / (self.data.beats * exercise_subdivisions)
+                        points = ((self._current_time / div_length) + 0.5) % 1
+                        precision = abs(0.5 - points) * 2
+                        color = bcolors.OKGREEN
+                        if precision > 0.3: 
+                            color = bcolors.FAIL
+                        elif precision > 0.1:
+                            color = bcolors.WARNING
+                        spacesbefore = ' ' * int((points * 50) - 1)
+                        spacesafter = ' ' * int((50 - points * 50) - 1)
+                        print(f'{color}{spacesbefore}-V-{spacesafter}{bcolors.ENDC}')
+                        print(f'{bcolors.FAIL}----|----|----|--{bcolors.WARNING}--|--{bcolors.OKGREEN}--|--{bcolors.WARNING}--|--{bcolors.FAIL}--|----|----|----{bcolors.ENDC}')
             
             device.process(self._current_time, midi_events)
             
