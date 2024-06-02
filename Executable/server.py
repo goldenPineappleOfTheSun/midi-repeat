@@ -66,7 +66,7 @@ class Note:
 class MPD218Preprocessor:
     def __init__(self):
         self.saved = []
-        self.treshold = 60
+        self.treshold = 100
 
     def is_start_event(self, event):
         return event[0][0] == 153 or event[0][0] == 144
