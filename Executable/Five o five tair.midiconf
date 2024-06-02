@@ -18,6 +18,6 @@ play 1, play 3, play 4, play 6, monitor 7
 
 MPK mini 3 event-153 note-36|MPK mini 3 event-153 note-37|MPK mini 3 event-153 note-38|MPK mini 3 event-153 note-39|MPK mini 3 event-153 note-44|MPK mini 3 event-153 note-45
 
-backing: false
-file: "button guitar.wav"
+backing: true
+file: "five o five tair.wav"
 offset: 0
