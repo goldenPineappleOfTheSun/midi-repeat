@@ -188,7 +188,9 @@ class Tape:
             self.process_play(pos)
         if self.state == tape_states.record:
             self.process_record(pos, midi_events)
-        if self.state == tape_states.record or self.state == tape_states.monitor:
+        if self.state == tape_states.monitor:
+            self.process_monitor(pos, midi_events)
+        if self.state == tape_states.record and not self.silent_record:
             self.process_monitor(pos, midi_events)
             
     def process_physical_notes(self, pos, midi_events):
@@ -289,6 +291,13 @@ class Tape:
                 note = Note(0, pitch, volume)
                 self.notes.append(note)
                 self.note_on(note)
+
+        if self.state == tape_states.record and self.silent_record == True:
+            for event in current_notes.values():
+                pitch = event[0][1]
+                volume = event[0][2]
+                note = Note(0, pitch, volume)
+                self.note_off(note)
 
         self.pos = 0
 

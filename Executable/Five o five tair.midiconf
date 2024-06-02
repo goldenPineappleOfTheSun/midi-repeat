@@ -9,10 +9,9 @@ cymbals: MPK mini 3
 size: 13714ms
 beats: 32
 
-monitor 1, monitor 2, monitor 4, metronome on
+monitor 1, metronome on
 repeat 1, shadow 5, shadow 6
-play 5
-repeat 2, repeat 3
+play 5, repeat 2, repeat 3
 repeat 3, repeat 4, metronome off
 mute 3, mute 5, monitor 4
 play 1, play 3, play 4, play 6, monitor 7
