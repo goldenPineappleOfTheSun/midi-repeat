@@ -95,10 +95,9 @@ class MPD218Preprocessor:
         return result
 
 class BackingTrack:
-    def __init__(self, filename, startloop = 0, offset = 0, volume = 1):
+    def __init__(self, filename, offset = 0, volume = 1):
         self.pyaudio = pyaudio.PyAudio()  
         self.filename = filename
-        self.first_loop = startloop
         self.offset = offset
         self.volume = volume
         self.file = None
@@ -539,7 +538,7 @@ class Server:
 
         next(self._socket_send_generator)
 
-        if self.backing_track and self.state == server_states.run and self.loops_count > self.backing_track.first_loop:
+        if self.backing_track and self.state == server_states.run and self.song_started:
             self.backing_track.read()
 
         try:
@@ -709,8 +708,8 @@ class Server:
                     print(message) # do not erase
                     self.socket_send(message)
 
-    def prepare_backing_track(self, filename, startloop, offset):
-        self.backing_track = BackingTrack(filename.replace('%20', ' '), int(startloop), int(offset))
+    def prepare_backing_track(self, filename, offset):
+        self.backing_track = BackingTrack(filename.replace('%20', ' '), int(offset))
 
     def set_basics(self, loop_size, beats):
         self.data.loop_length = int(loop_size)

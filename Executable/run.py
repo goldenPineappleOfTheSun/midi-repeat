@@ -82,7 +82,6 @@ buttons_encoded = buttons.replace(' ', '%20')
 
 backing_enabled = False
 backing_file = ''
-backing_startloop = 0
 backing_offset = 0
 if backing[0] == 'backing: true' or backing[0] == 'backing:true':
     backing_enabled = True
@@ -91,10 +90,6 @@ if backing[0] == 'backing: true' or backing[0] == 'backing:true':
         match = re.search(r'file: "([\w\s\.\d_-]+)"', line)
         if match:
             backing_file = match.group(1).replace(' ', '%20')
-        
-        match = re.search(r'startloop: (\d+)', line)
-        if match:
-            backing_startloop = match.group(1)
         
         match = re.search(r'offset: (\d+)', line)
         if match:
@@ -105,7 +100,7 @@ if backing[0] == 'backing: true' or backing[0] == 'backing:true':
 socket = client.create()
 time.sleep(1)
 if backing_enabled:
-    client.send(socket, f'prepare-backing-track {backing_file} {backing_startloop} {backing_offset}')
+    client.send(socket, f'prepare-backing-track {backing_file} {backing_offset}')
     time.sleep(2)
 
 client.send(socket, f'set-basics {size} {beats}')
