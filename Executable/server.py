@@ -312,17 +312,20 @@ class Tape:
     def record(self):
         self.state = tape_states.record
         self.device.socket_send(f'tape-record {self.port_index}')
+        self.notes = []
         print(f'{bcolors.FAIL}RECORD [{self.port_index}]{bcolors.ENDC}')
             
     def shadow(self):
         self.state = tape_states.record
         self.silent_record = True
+        self.notes = []
         self.device.socket_send(f'tape-shadow {self.port_index}')
         print(f'{bcolors.HEADER}RECORD [{self.port_index}]{bcolors.ENDC}')
             
     def repeat(self):
         self.state = tape_states.record
         self.play_after_record = True
+        self.notes = []
         self.device.socket_send(f'tape-record {self.port_index}')
         print(f'{bcolors.FAIL}RECORD-REPEAT [{self.port_index}]{bcolors.ENDC}')
             
