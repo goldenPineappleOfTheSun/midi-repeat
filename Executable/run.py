@@ -1,6 +1,7 @@
 import client
-import time
 import random
+import json
+import time
 import re
 import os
 
@@ -29,88 +30,40 @@ question('select:', options)
 
 # --- read configs ---
 
-lines = []
+config = {}
 with open(options[selected], "r") as file:
-    lines = [line.rstrip() for line in file]
+    config = json.load(file)
 
-wires = []
-basic = []
-scripts = []
-buttons = ''
-backing = []
+size = config['basic']['size']
+beats = config['basic']['beats']
 
-state = 'wires'
-states = ['wires', 'basic', 'scripts', 'buttons', 'backing', '']
-for line in lines:
-    if line == '':
-        state = states[states.index(state) + 1]
-        continue
-    if state == 'wires':
-        wires.append(line)
-    if state == 'basic':
-        basic.append(line)
-    if state == 'scripts':
-        scripts.append(line)
-    if state == 'buttons':
-        buttons = line
-    if state == 'backing':
-        backing.append(line)
+wiring = []
+for line in config['wiring']:
+    wiring.append(line['device'])
+wiring = '|'.join(wiring).replace(' ', '%20')
 
-# --- interpret configs ---
-
-size = 0
-beats = 0
-for line in basic:
-
-    match = re.search(r'size: (\d+)ms', line)
-    if match:
-        size = match.group(1)
-
-    match = re.search(r'beats: (\d+)$', line)
-    if match:
-        beats = match.group(1)
-
-wiredevices = []
-for line in wires:
-    match = re.search(r'\w+: ([\d\w ]+)$', line)
-    wiredevices.append(match.group(1))
-wires_encoded = '|'.join(wiredevices).replace(' ', '%20')
-
-scripts_encoded = '/'.join([x.replace(', ', '>').replace(',', '>').replace(' ', '.') for x in scripts])
-
-buttons_encoded = buttons.replace(' ', '%20')
-
-backing_enabled = False
-backing_file = ''
-backing_offset = 0
-if backing[0] == 'backing: true' or backing[0] == 'backing:true':
-    backing_enabled = True
-    for line in backing:
-
-        match = re.search(r'file: "([\w\s\.\d_-]+)"', line)
-        if match:
-            backing_file = match.group(1).replace(' ', '%20')
-        
-        match = re.search(r'offset: (\d+)', line)
-        if match:
-            backing_offset = match.group(1)
+scripts = '/'.join([x.replace(', ', '>').replace(',', '>').replace(' ', '.') for x in config['scripts']])
 
 # --- start ---
 
 socket = client.create()
 time.sleep(1)
-if backing_enabled:
+if config['backing'] and config['backing']['enabled']:
+    backing_file = config['backing']['file'].replace(' ', '%20')
+    backing_offset = config['backing']['offset']
     client.send(socket, f'prepare-backing-track {backing_file} {backing_offset}')
     time.sleep(2)
 
 client.send(socket, f'set-basics {size} {beats}')
 time.sleep(0.5)
-client.send(socket, f'set-wiring {wires_encoded}')
+client.send(socket, f'set-wiring {wiring}')
 time.sleep(0.5)
-client.send(socket, f'set-scripts {scripts_encoded}')
+client.send(socket, f'set-scripts {scripts}')
 time.sleep(0.5)
-client.send(socket, f'set-buttons {buttons_encoded}')
-time.sleep(0.5)
+if 'scheme' in config:
+    scheme = config['scheme']
+    client.send(socket, f'set-scheme {scheme}')
+    time.sleep(0.5)
 client.send(socket, f'start')
 
 input()

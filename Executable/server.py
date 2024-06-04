@@ -537,6 +537,7 @@ class Server:
         self.song_started = False
         self._socket_send_generator = self._create_socket_send_generator()
         self.backing_track = None
+        self.scheme = []
         self.loops_count = 0
         print(f"{bcolors.OKBLUE}Server listening on {host}:{port}{bcolors.ENDC}")
 
@@ -608,6 +609,10 @@ class Server:
         
         if command == 'set-buttons':
             self.set_buttons(*message[1:])
+            return
+        
+        if command == 'set-scheme':
+            self.set_scheme(*message[1:])
             return
         
         if command == 'enable-metronome':
@@ -758,6 +763,15 @@ class Server:
     def set_buttons(self, message):
         self.data.buttons = [None] + [ControlButton(x.replace('%20', ' ')) for x in message.split('|')]
 
+    def set_scheme(self, scheme):
+        scheme = scheme.split('|')
+        self.scheme = []
+        for button in scheme:
+            if button == '-':
+                self.scheme.append(None)
+            else:
+                self.scheme.append(int(button))
+
     def enable_metronome(self):
         self.socket_send('metronome-on-event')
         self.is_metronome_on = True
@@ -796,9 +810,6 @@ class Server:
         if self.data.beats == None:
             print(f'{bcolors.WARNING}Beats number is not set!{bcolors.ENDC}')
             return
-        if self.data.buttons == None:
-            print(f'{bcolors.WARNING}Buttons are not set!{bcolors.ENDC}')
-            return
         if self.metronome_output == None:
             print(f'{bcolors.WARNING}Devices are not set!{bcolors.ENDC}')
             return
@@ -831,7 +842,7 @@ class Server:
                     midi_events = pp.process_input(midi_events)
                 for event in midi_events:
                     is_pressed = event[0][0] == 144 or event[0][0] == 153
-                    if is_pressed:
+                    if is_pressed and self.data.buttons:
                         for button_index, button in enumerate(self.data.buttons):
                             if button_index == 0:
                                 continue
@@ -866,6 +877,9 @@ class Server:
                 self.song_started = True
             for device in self.data.devices:
                 device.start_loop()
+
+            if self.loops_count > 0 and self.scheme[self.loops_count - 1]:
+                self.scriptsCache.stage_script(self.scheme[self.loops_count - 1])
 
         beat_length = self.data.loop_length / self.data.beats
         last_beat = floor(self._last_current_time / beat_length)
@@ -1008,5 +1022,6 @@ if __name__ == "__main__":
             except Exception as err:
                 print(err)
                 traceback.print_exc()
+                input()
                 exit()
                 break
