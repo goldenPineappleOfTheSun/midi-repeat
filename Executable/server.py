@@ -878,8 +878,9 @@ class Server:
             for device in self.data.devices:
                 device.start_loop()
 
-            if self.loops_count > 0 and self.scheme[self.loops_count - 1]:
-                self.scriptsCache.stage_script(self.scheme[self.loops_count - 1])
+            if len(self.scheme) > 0:
+                if self.loops_count > 0 and self.scheme[self.loops_count - 1]:
+                    self.scriptsCache.stage_script(self.scheme[self.loops_count - 1])
 
         beat_length = self.data.loop_length / self.data.beats
         last_beat = floor(self._last_current_time / beat_length)
@@ -1021,7 +1022,10 @@ if __name__ == "__main__":
                 break
             except Exception as err:
                 print(err)
-                traceback.print_exc()
+                try:
+                    print(traceback.format_exc())
+                except:
+                    pass
                 input()
                 exit()
                 break
