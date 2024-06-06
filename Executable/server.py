@@ -42,12 +42,19 @@ exercise_subdivisions = 2
 #-- classes --
 
 class Note:
-    def __init__(self, pos, pitch, volume, length = 0):
+    def __init__(self, pos, pitch, volume, channel = 1, length = 0):
         self.pitch = pitch
         self.volume = volume
         self.pos = pos
+        self.channel = channel
         self.length = length
         self._play_started = 0
+
+    def from_event(pos, event):
+        channel = 1 if event[0][0] == 144 or event[0][0] == 128 else 10
+        pitch = event[0][1]
+        volume = event[0][2]
+        return Note(pos, pitch, volume, channel)
         
     def started(self, pos):
         self._play_started = pos
@@ -61,7 +68,8 @@ class Note:
         return names[self.pitch % 12]
 
     def __str__(self):
-        return f'[♪{self.pitch_str()} {round(self.pos)}ms {round(self.length)}ms{f" ({round(self._play_started)}ms)" if self._play_started > 0 else ""}]'
+        icon = '◯' if self.channel == 10 else '♪'
+        return f'[{icon} {self.pitch_str()} {round(self.pos)}ms {round(self.length)}ms{f" ({round(self._play_started)}ms)" if self._play_started > 0 else ""}]'
 
 class MPD218Preprocessor:
     def __init__(self):
@@ -177,10 +185,10 @@ class Tape:
         return f'{info[1].decode()} ({info[0].decode()})'
         
     def note_on(self, note):
-        self.player.note_on(note.pitch, note.volume)
+        self.player.note_on(note.pitch, note.volume, channel = note.channel - 1)
         
     def note_off(self, note):
-        self.player.note_off(note.pitch, note.volume)
+        self.player.note_off(note.pitch, note.volume, channel = note.channel - 1)
         
     def process(self, pos, midi_events):
         self.process_physical_notes(pos, midi_events)
@@ -210,15 +218,11 @@ class Tape:
         stoped = [x for x in midi_events if x[0][0] == 128 or x[0][0] == 137]
 
         for event in started:
-            pitch = event[0][1]
-            volume = event[0][2]
-            note = Note(pos, pitch, volume)
+            note = Note.from_event(pos, event)
             self.note_on(note)
 
         for event in stoped:
-            pitch = event[0][1]
-            volume = event[0][2]
-            note = Note(pos, pitch, volume)
+            note = Note.from_event(pos, event)
             self.note_off(note)
 
     def process_play(self, pos):
@@ -236,12 +240,10 @@ class Tape:
     def process_record(self, pos, midi_events):
         for event in midi_events:
             is_on = event[0][0] == 144 or event[0][0] == 153
-            is_off = event[0][0] == 128 or event[0][0] == 137
             pitch = event[0][1]
-            volume = event[0][2]
             if is_on:
-                self.notes.append(Note(pos, pitch, volume))
-            if is_off:
+                self.notes.append(Note.from_event(pos, event))
+            else:
                 for note in [x for x in self.notes if x.length == 0 and x.pitch == pitch]:
                     length = pos - note.pos
                     if length < 0:
@@ -281,9 +283,7 @@ class Tape:
         if self.state == tape_states.record:
             current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
             for event in current_notes.values():
-                pitch = event[0][1]
-                volume = event[0][2]
-                note = Note(0, pitch, volume)
+                note = Note.from_event(0, event)
                 self.notes.append(note)
                 self.note_on(note)
 
@@ -339,9 +339,7 @@ class Tape:
     def stop_all_current_notes(self):
         current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
         for event in current_notes.values():
-            pitch = event[0][1]
-            volume = event[0][2]
-            note = Note(0, pitch, volume)
+            note = Note.from_event(0, event)
             self.note_off(note)
 
     def __str__(self):
