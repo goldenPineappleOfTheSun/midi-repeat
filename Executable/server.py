@@ -276,12 +276,7 @@ class Tape:
                     
     def start_loop(self):
         if self.prev_state == tape_states.monitor and self.state != tape_states.monitor:
-            current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
-            for event in current_notes.values():
-                pitch = event[0][1]
-                volume = event[0][2]
-                note = Note(0, pitch, volume)
-                self.note_off(note)
+            self.stop_all_current_notes()
 
         if self.state == tape_states.record:
             current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
@@ -293,11 +288,7 @@ class Tape:
                 self.note_on(note)
 
         if self.state == tape_states.record and self.silent_record == True:
-            for event in current_notes.values():
-                pitch = event[0][1]
-                volume = event[0][2]
-                note = Note(0, pitch, volume)
-                self.note_off(note)
+            self.stop_all_current_notes()
 
         self.pos = 0
 
@@ -340,12 +331,18 @@ class Tape:
         print(f'{bcolors.OKBLUE}MONITOR [{self.port_index}]{bcolors.ENDC}')
 
     def stop(self):
+        for note in self.notes:
+            self.note_off(note)
+            note.stoped()
+        self.stop_all_current_notes()
+
+    def stop_all_current_notes(self):
         current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
         for event in current_notes.values():
+            pitch = event[0][1]
+            volume = event[0][2]
+            note = Note(0, pitch, volume)
             self.note_off(note)
-        for note in self.notes:
-                self.note_off(note)
-                note.stoped()
 
     def __str__(self):
         return self.get_output_info()
@@ -923,6 +920,7 @@ class Server:
 
     def stop_server(self):
         try:
+            self.stop()
             self.client_socket.send(b'stop')
             self.client_socket.shutdown(socket.SHUT_RDWR)
             self.client_socket.close()
