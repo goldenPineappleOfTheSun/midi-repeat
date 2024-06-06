@@ -878,9 +878,10 @@ class Server:
             for device in self.data.devices:
                 device.start_loop()
 
-            if len(self.scheme) > 0:
-                if self.loops_count > 0 and self.scheme[self.loops_count - 1]:
-                    self.scriptsCache.stage_script(self.scheme[self.loops_count - 1])
+            if self.loops_count > 0 and len(self.scheme) > self.loops_count - 1:
+                script = self.scheme[self.loops_count - 1]
+                if script != None:
+                    self.scriptsCache.stage_script(int(script))
 
         beat_length = self.data.loop_length / self.data.beats
         last_beat = floor(self._last_current_time / beat_length)
