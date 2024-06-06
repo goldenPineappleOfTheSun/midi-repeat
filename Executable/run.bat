@@ -1,2 +1,1 @@
-start wt python server.py 
-start wt python run.py
+start wt python server.py; split-pane -V python run.py
