@@ -34,11 +34,6 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-#-- debug options
-
-exercise_enabled = True
-exercise_subdivisions = 2
-
 #-- classes --
 
 class Note:
@@ -513,6 +508,8 @@ class ServerData:
         self.devices = [] # Device[]
         self.mailboxes = [] # pygame.midi.Input
         self.preprocessors = [] # process raw input events (raw_event[] -> raw_event[])
+        self._practice_enabled = False
+        self._practice_subdivisions = 2
 
 class Server:
     def __init__(self, host, port):
@@ -616,6 +613,11 @@ class Server:
         
         if command == 'disable-metronome':
             self.is_metronome_on = False
+            return
+        
+        if command == 'enable-practice':
+            self.data._practice_enabled = True
+            self.data._practice_subdivisions = int(message[1])
             return
         
         if command == 'start':
@@ -844,10 +846,10 @@ class Server:
                             if button.check_event(self.data.mailboxes[i], event):
                                 print(f'{bcolors.OKCYAN}STAGED SCRIPT "{self.scriptsCache.get_script_source(button_index).replace(".", " ").replace(">", ", ")}"{bcolors.ENDC}')
                                 self.scriptsCache.stage_script(button_index)
-                if len(midi_events) > 0 and exercise_enabled:
+                if len(midi_events) > 0 and self.data._practice_enabled:
                     midi_events[0][0][0] == 144 or midi_events[0][0][0] == 153
                     if is_pressed:
-                        div_length = self.data.loop_length / (self.data.beats * exercise_subdivisions)
+                        div_length = self.data.loop_length / (self.data.beats * self.data._practice_subdivisions)
                         points = ((self._current_time / div_length) + 0.5) % 1
                         precision = abs(0.5 - points) * 2
                         color = bcolors.OKGREEN

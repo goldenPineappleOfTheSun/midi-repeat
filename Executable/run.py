@@ -13,9 +13,10 @@ def question(text, options):
     print(text)
 
     for key in options.keys():
-        print(f'{key}: {options[key]}')
+        if key:
+            print(f'{key}: {options[key]}')
 
-    answer = ''
+    answer = 'NOT THE ANSWER!!!'
     while not answer in options.keys():
         answer = input()
     selected = answer
@@ -44,6 +45,12 @@ wiring = '|'.join(wiring).replace(' ', '%20')
 
 scripts = '/'.join([x.replace(', ', '>').replace(',', '>').replace(' ', '.') for x in config['scripts']])
 
+practice = False
+question('Включить режим практики? (Enter - пропустить)', {'y':True, 'n':False, '':False})
+if selected == 'y':
+    question('Долей на удар метронома (скорость)?', {'1':1, '2':2, '4':4, '8':8})
+    practice = selected
+
 # --- start ---
 
 socket = client.create()
@@ -60,11 +67,15 @@ client.send(socket, f'set-wiring {wiring}')
 time.sleep(0.5)
 client.send(socket, f'set-scripts {scripts}')
 time.sleep(0.5)
+if practice:
+    client.send(socket, f'enable-practice {practice}')
+    time.sleep(0.5)
 if 'scheme' in config:
     scheme = config['scheme']
     client.send(socket, f'set-scheme {scheme}')
     time.sleep(0.5)
 client.send(socket, f'start')
 
+print('нажми Enter, чтобы завершить работу')
 input()
 client.send(socket, f'stop')
