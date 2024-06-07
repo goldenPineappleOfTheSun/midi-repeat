@@ -58,7 +58,8 @@ time.sleep(1)
 if config['backing'] and config['backing']['enabled']:
     backing_file = config['backing']['file'].replace(' ', '%20')
     backing_offset = config['backing']['offset']
-    client.send(socket, f'prepare-backing-track {backing_file} {backing_offset}')
+    backing_volume = config['backing']['volume']
+    client.send(socket, f'prepare-backing-track {backing_file} {backing_offset} {backing_volume}')
     time.sleep(2)
 
 client.send(socket, f'set-basics {size} {beats}')
@@ -76,6 +77,6 @@ if 'scheme' in config:
     time.sleep(0.5)
 client.send(socket, f'start')
 
-print('нажми Enter, чтобы завершить работу')
+print('нажми Enter, чтобы безопасно завершить работу')
 input()
 client.send(socket, f'stop')

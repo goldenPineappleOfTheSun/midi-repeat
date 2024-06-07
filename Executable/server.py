@@ -129,6 +129,12 @@ class BackingTrack:
         self.stream.write(self.buffer)  
         self.buffer = self.file.readframes(self.chunk)
 
+    def change_volume(self, data, volume):
+        audio_data = numpy.frombuffer(data, dtype=numpy.int16)
+        audio_data = audio_data * volume
+        audio_data = numpy.clip(audio_data, -32768, 32767)
+        return audio_data.astype(numpy.int16).tobytes()
+
 '''
 инициализация:
 1. программа спрашивает, сколько будет дорожек (выходных портов)
@@ -722,8 +728,8 @@ class Server:
                     print(message) # do not erase
                     self.socket_send(message)
 
-    def prepare_backing_track(self, filename, offset):
-        self.backing_track = BackingTrack(filename.replace('%20', ' '), int(offset))
+    def prepare_backing_track(self, filename, offset, volume):
+        self.backing_track = BackingTrack(filename.replace('%20', ' '), int(offset), float(volume))
 
     def set_basics(self, loop_size, beats):
         self.data.loop_length = int(loop_size)
