@@ -30,24 +30,24 @@
         }
     ],
     "basic": {
-        "size": 5000,
-        "beats": 16
+        "size": 13714,
+        "beats": 32
     },
     "scripts": [
-        "metronome on",
-        "repeat 3",
-        "repeat 3",
+        "metronome on, monitor 1",
         "repeat 1, shadow 5, shadow 6",
         "play 5, repeat 2, repeat 3",
         "repeat 3, repeat 4, metronome off",
-        "mute 3, mute 5, monitor 4",
-        "play 1, play 3, play 4, play 6, monitor 7"
+        "mute 3, monitor 4, mute 5, play 6",
+        "play 1, mute 2, play 3, play 4, monitor 7",
+        "mute 2, mute 3, mute 4, play 5, mute 6, mute 7"
     ],
-    "scheme": "1|-|2",
+    "scheme": "1|-|-|2|-|-|-|3|-|-|4|-|5|-|-|-|-|6",
     "buttons": [],
     "backing": {
         "enabled": true,
-        "file": "five o five tair.wav",
-        "offset": 0
+        "file": "foftair.wav",
+        "offset": 0,
+        "volume": 1
     }
 }
