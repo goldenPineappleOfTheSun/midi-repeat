@@ -817,7 +817,11 @@ class Server:
             print(f'{bcolors.WARNING}Devices are not set!{bcolors.ENDC}')
             return
 
+        # exactly one loop before start
         self.data.start_time = time.time() * 1000 + (self.data.loop_length / self.data.beats) * 0.3
+        # adding half a loop
+        self.data.start_time -= self.data.loop_length / 2
+
         self.state = server_states.run
         self.scriptsCache.execute_immediately(0)
         self.socket_send(f'sync {self.data.start_time}')
@@ -872,19 +876,26 @@ class Server:
             
         if self._current_time < self._last_current_time:
             print('loop!')
+
+            # end loop
             self.loops_count += 1
             for device in self.data.devices:
                 device.end_loop()
             self.scriptsCache.fire_staged_scripts()
             if (self.scriptsCache.fired_count > 0):
                 self.song_started = True
-            for device in self.data.devices:
-                device.start_loop()
 
-            if self.loops_count > 0 and len(self.scheme) > self.loops_count - 1:
+            # scheme's immidiate scripts
+            if self.scheme and self.loops_count > 0 and len(self.scheme) > self.loops_count - 1:
                 script = self.scheme[self.loops_count - 1]
                 if script != None:
                     self.scriptsCache.stage_script(int(script))
+                    self.scriptsCache.fire_staged_scripts()
+                    self.song_started = True
+            
+            #start loop
+            for device in self.data.devices:
+                device.start_loop()
 
         beat_length = self.data.loop_length / self.data.beats
         last_beat = floor(self._last_current_time / beat_length)
