@@ -184,6 +184,11 @@ class Tape:
         all_devices = [pygame.midi.get_device_info(i) for i in range(device_count)]
         info = all_devices[self.out]
         return f'{info[1].decode()} ({info[0].decode()})'
+
+    def get_loop_length(self):
+        if self.loop_length <= 0:
+            self.loop_length =  self.device.server.data.loop_length
+        return self.loop_length
         
     def note_on(self, note):
         self.player.note_on(note.pitch, note.volume, channel = note.channel - 1)
@@ -272,21 +277,21 @@ class Tape:
 
             for note in self.notes:
                 if note.length == 0:
-                    note.length = self.loop_length - note.pos
+                    note.length = self.get_loop_length() - note.pos
                     self.note_off(note)
 
         self.device.socket_send('loop-event')
                     
     def start_loop(self):
-        if self.prev_state == tape_states.monitor and self.state != tape_states.monitor:
-            self.stop_all_current_notes()
-
         if self.state == tape_states.record:
             current_notes = {k:v for k, v in self.current_real_notes.items() if v != None}
             for event in current_notes.values():
                 note = Note.from_event(0, event)
                 self.notes.append(note)
                 self.note_on(note)
+
+        if self.prev_state == tape_states.monitor and self.state != tape_states.monitor:
+            self.stop_all_current_notes()
 
         if self.state == tape_states.record and self.silent_record == True:
             self.stop_all_current_notes()
