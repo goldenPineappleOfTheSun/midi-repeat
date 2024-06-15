@@ -48,7 +48,7 @@
     "backing": {
         "enabled": true,
         "file": "foftair.wav",
-        "offset": 0,
+        "offset": 8000,
         "volume": 1
     }
 }
