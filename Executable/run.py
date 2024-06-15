@@ -59,7 +59,8 @@ if config['backing'] and config['backing']['enabled']:
     backing_file = config['backing']['file'].replace(' ', '%20')
     backing_offset = config['backing']['offset']
     backing_volume = config['backing']['volume']
-    client.send(socket, f'prepare-backing-track {backing_file} {backing_offset} {backing_volume}')
+    backing_skiploops = config['backing']['skiploops']
+    client.send(socket, f'prepare-backing-track {backing_file} {backing_offset} {backing_skiploops} {backing_volume}')
     time.sleep(2)
 
 client.send(socket, f'set-basics {size} {beats}')
@@ -73,6 +74,9 @@ if practice:
     time.sleep(0.5)
 if 'scheme' in config:
     scheme = config['scheme']
+    if config['backing'] and config['backing']['skiploops']:
+        skiploop = config['backing']['skiploops']
+        scheme = '|'.join(scheme.split('|')[skiploop:])
     client.send(socket, f'set-scheme {scheme}')
     time.sleep(0.5)
 client.send(socket, f'start')

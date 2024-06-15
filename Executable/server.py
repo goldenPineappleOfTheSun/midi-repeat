@@ -98,18 +98,20 @@ class MPD218Preprocessor:
         return result
 
 class BackingTrack:
-    def __init__(self, filename, offset = 0, volume = 1):
+    def __init__(self, filename, offset = 0, skiploops=0, volume = 1):
         self.pyaudio = pyaudio.PyAudio()  
         self.filename = filename
         self.offset = offset
+        self.skiploops = skiploops
         self.volume = volume
         self.file = None
         self.stream = None
         self.buffer = None
         self.chunk = 1024
-        self.prepare(filename, offset)
+        self.loopsize = 0
+        self.prepare(filename, offset, skiploops)
 
-    def prepare(self, filename, offset):
+    def prepare(self, filename, offset, skiploops):
         self.file = wave.open(filename, "rb") 
         self.stream = self.pyaudio.open(format = self.pyaudio.get_format_from_width(self.file.getsampwidth()),  
             channels = self.file.getnchannels(),  
@@ -117,9 +119,11 @@ class BackingTrack:
             output = True)  
         self.buffer = b'\x00' * self.chunk
         
-        while self.offset < 0:
-            self.offset += self.chunk
-            self.buffer = self.file.readframes(self.chunk)
+        if self.skiploops > 0 and self.loopsize > 0:
+            self._skip_loops()
+
+        if self.offset < 0:
+            self.file.readframes(-self.offset)
 
     def read(self):
         if self.offset > 0:
@@ -129,7 +133,16 @@ class BackingTrack:
         self.stream.write(self.buffer)  
         self.buffer = self.file.readframes(self.chunk)
 
-    def change_volume(self, data, volume):
+    def set_loop_size(self, ms):
+        self.loopsize = ms
+        self._skip_loops()
+
+    def _skip_loops(self):
+        frames = int(self.skiploops * self.file.getframerate() * self.loopsize / 1000)
+        self.skiploops = 0
+        self.file.readframes(frames)
+
+    def _change_volume(self, data, volume):
         audio_data = numpy.frombuffer(data, dtype=numpy.int16)
         audio_data = audio_data * volume
         audio_data = numpy.clip(audio_data, -32768, 32767)
@@ -733,12 +746,14 @@ class Server:
                     print(message) # do not erase
                     self.socket_send(message)
 
-    def prepare_backing_track(self, filename, offset, volume):
-        self.backing_track = BackingTrack(filename.replace('%20', ' '), int(offset), float(volume))
+    def prepare_backing_track(self, filename, offset, skiploops, volume):
+        self.backing_track = BackingTrack(filename.replace('%20', ' '), int(offset), int(skiploops), float(volume))
 
     def set_basics(self, loop_size, beats):
         self.data.loop_length = int(loop_size)
         self.data.beats = int(beats)
+        if self.backing_track:
+            self.backing_track.set_loop_size(self.data.loop_length)
 
     def set_wiring(self, message):
         self.data.devices.clear()

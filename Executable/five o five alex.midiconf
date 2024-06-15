@@ -49,6 +49,7 @@
         "enabled": true,
         "file": "fofalex.wav",
         "offset": 8000,
-        "volume": 1
+        "volume": 1,
+		"skiploops": 0
     }
 }
