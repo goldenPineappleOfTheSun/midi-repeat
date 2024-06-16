@@ -35,7 +35,7 @@
     "scheme_description": "rec beat|rec lowtom|XXX|XXX|dfull drumkit|button to button|4 on the floor|XXX|XXX|full drumkit|button to button|outro",
     "buttons": [],
     "backing": {
-        "enabled": true,
+        "enabled": false,
         "file": "Button to button alex.wav",
         "offset": 12000,
         "volume": 0.7,

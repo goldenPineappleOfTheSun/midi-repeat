@@ -74,7 +74,7 @@ if practice:
     time.sleep(0.5)
 if 'scheme' in config:
     scheme = config['scheme']
-    if config['backing'] and config['backing']['skiploops']:
+    if 'backing' in config and 'skiploops' in config['backing']:
         skiploop = config['backing']['skiploops']
         scheme = '|'.join(scheme.split('|')[skiploop:])
     client.send(socket, f'set-scheme {scheme}')
