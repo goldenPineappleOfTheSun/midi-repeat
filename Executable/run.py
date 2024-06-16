@@ -79,6 +79,10 @@ if 'scheme' in config:
         scheme = '|'.join(scheme.split('|')[skiploop:])
     client.send(socket, f'set-scheme {scheme}')
     time.sleep(0.5)
+if 'scheme_description' in config:
+    scheme_description = config['scheme_description'].replace(' ', '%20')
+    client.send(socket, f'set-scheme-description {scheme_description}')
+    time.sleep(0.5)
 client.send(socket, f'start')
 
 print('нажми Enter, чтобы безопасно завершить работу')

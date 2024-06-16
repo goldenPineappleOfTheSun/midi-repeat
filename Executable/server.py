@@ -554,6 +554,7 @@ class Server:
         self._socket_send_generator = self._create_socket_send_generator()
         self.backing_track = None
         self.scheme = []
+        self.scheme_description = []
         self.loops_count = 0
         print(f"{bcolors.OKBLUE}Server listening on {host}:{port}{bcolors.ENDC}")
 
@@ -629,6 +630,10 @@ class Server:
         
         if command == 'set-scheme':
             self.set_scheme(*message[1:])
+            return
+
+        if command == 'set-scheme-description':
+            self.set_scheme_description(*message[1:])
             return
         
         if command == 'enable-metronome':
@@ -795,6 +800,19 @@ class Server:
             else:
                 self.scheme.append(int(button))
 
+    def set_scheme_description(self, scheme):
+        self.scheme_description = scheme.replace('%20', ' ').split('|')
+
+    def print_scheme_description(self, start, end, current):
+        if start < 0:
+            start = 0;
+        if end > len(self.scheme_description):
+            end = len(self.scheme_description)
+        txt = '|'.join([f'{bcolors.FAIL}{x}{bcolors.ENDC}' if i == current - start - 1 else x for i, x in enumerate(self.scheme_description[start:end])])
+        print('')
+        print(f'|{txt}|')
+        print('')
+
     def enable_metronome(self):
         self.socket_send('metronome-on-event')
         self.is_metronome_on = True
@@ -916,6 +934,10 @@ class Server:
             #start loop
             for device in self.data.devices:
                 device.start_loop()
+
+            # scheme description
+            if len(self.scheme_description) > 0:
+                self.print_scheme_description(self.loops_count - 2, self.loops_count + 2, self.loops_count)
 
         beat_length = self.data.loop_length / self.data.beats
         last_beat = floor(self._last_current_time / beat_length)

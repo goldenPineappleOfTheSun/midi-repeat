@@ -45,6 +45,7 @@
         "mute 2, mute 3, mute 4, play 5, mute 6, mute 7"
     ],
     "scheme": "1|2|-|3|4|-|-|5|-|-|6|-|7|-|-|-|-|8",
+    "scheme_description": "1:intro|2:rec sticks|XXX|3:rec kick|4:bass|XXX|XXX|5:chorus|XXX|XXX|6:pause|XXX|7:verse|XXX|XXX|XXX|XXX|8:outro",
     "buttons": [],
     "backing": {
         "enabled": true,
