@@ -50,7 +50,7 @@
     "backing": {
         "enabled": true,
         "file": "fofalex.wav",
-        "offset": 8000,
+        "offset": 9000,
         "volume": 1,
 		"skiploops": 0
     }
