@@ -6,15 +6,15 @@
         },
         {
             "name": "kick",
-            "device": "MPD218"
+            "device": "MPK mini 3"
         },
         {
             "name": "lowtom",
-            "device": "MPD218"
+            "device": "MPK mini 3"
         },
         {
             "name": "drumkit",
-            "device": "MPD218"
+            "device": "MPK mini 3"
         }
     ],
     "basic": {
