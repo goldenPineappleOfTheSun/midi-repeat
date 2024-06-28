@@ -303,7 +303,10 @@ class Tape:
                 self.notes.append(note)
                 self.note_on(note)
 
-        if self.prev_state == tape_states.monitor and self.state != tape_states.monitor:
+        if self.prev_state == tape_states.monitor and self.state == tape_states.mute:
+            self.stop_all_current_notes()
+
+        if self.prev_state == tape_states.monitor and self.state == tape_states.play:
             self.stop_all_current_notes()
 
         if self.state == tape_states.record and self.silent_record == True:

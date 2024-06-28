@@ -1,0 +1,26 @@
+{
+    "wiring": [
+        {
+            "test": "drone",
+            "device": "MPK mini 3"
+        }
+    ],
+    "basic": {
+        "size": 6000,
+        "beats": 8
+    },
+    "scripts": [
+        "metronome on, monitor 1",
+        "repeat 1"
+    ],
+    "scheme": "1",
+    "scheme_description": "test",
+    "buttons": [],
+    "backing": {
+        "enabled": false,
+        "file": "foftair.wav",
+        "offset": 9000,
+        "volume": 1,
+        "skiploops": 0
+    }
+}
