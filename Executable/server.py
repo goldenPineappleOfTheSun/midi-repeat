@@ -301,7 +301,7 @@ class Tape:
             for event in current_notes.values():
                 note = Note.from_event(0, event)
                 self.notes.append(note)
-                self.note_on(note)
+                #self.note_on(note)
 
         if self.prev_state == tape_states.monitor and self.state == tape_states.mute:
             self.stop_all_current_notes()
@@ -1076,17 +1076,4 @@ if __name__ == "__main__":
         #server.set_devices(ports)
         server.accept()
         while True:
-            try:
-                server.mainloop()
-            except KeyboardInterrupt:
-                print('Closed by keyboard interruption')
-                break
-            except Exception as err:
-                print(err)
-                try:
-                    print(traceback.format_exc())
-                except:
-                    pass
-                input()
-                exit()
-                break
+            server.mainloop()
